@@ -1,0 +1,7 @@
+-- TODO: Add trigger(s) here, e.g. auto-update Order.Total_Amount or
+-- log payment confirmation when a row is inserted into Payment.
+-- USE cafe_billing_system;
+-- DELIMITER //
+-- CREATE TRIGGER ...
+-- //
+-- DELIMITER ;
