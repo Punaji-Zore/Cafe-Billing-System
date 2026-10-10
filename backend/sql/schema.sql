@@ -1,69 +1,75 @@
-CREATE DATABASE IF NOT EXISTS cafe_billing_system;
-USE cafe_billing_system;
+-- PostgreSQL schema for Cafe Billing System
+-- Safe to run more than once (CREATE TABLE IF NOT EXISTS).
+-- Note: the ER entity "Order" is the table "orders", because ORDER is a
+-- reserved SQL word.
 
-CREATE TABLE Customer (
-  Customer_ID INT AUTO_INCREMENT PRIMARY KEY,
-  Customer_Name VARCHAR(100) NOT NULL,
-  Phone_No VARCHAR(15)
+CREATE TABLE IF NOT EXISTS customer (
+  customer_id   SERIAL PRIMARY KEY,
+  customer_name VARCHAR(100) NOT NULL,
+  phone_no      VARCHAR(15)
 );
 
-CREATE TABLE Employee (
-  Employee_ID INT AUTO_INCREMENT PRIMARY KEY,
-  Employee_Name VARCHAR(100) NOT NULL,
-  Role VARCHAR(50),
-  Contact_No VARCHAR(15)
+CREATE TABLE IF NOT EXISTS employee (
+  employee_id   SERIAL PRIMARY KEY,
+  employee_name VARCHAR(100) NOT NULL,
+  role          VARCHAR(50),
+  contact_no    VARCHAR(15),
+  username      VARCHAR(50) UNIQUE,
+  password_hash VARCHAR(255)
 );
 
-CREATE TABLE Menu_Item (
-  Item_ID INT AUTO_INCREMENT PRIMARY KEY,
-  Item_Name VARCHAR(100) NOT NULL,
-  Category VARCHAR(50),
-  Price DECIMAL(8,2) NOT NULL
+CREATE TABLE IF NOT EXISTS menu_item (
+  item_id   SERIAL PRIMARY KEY,
+  item_name VARCHAR(100) NOT NULL,
+  category  VARCHAR(50),
+  price     NUMERIC(8,2) NOT NULL CHECK (price >= 0)
 );
 
-CREATE TABLE Combo (
-  Combo_ID INT AUTO_INCREMENT PRIMARY KEY,
-  Combo_Name VARCHAR(100) NOT NULL,
-  Discount_Percent DECIMAL(5,2) NOT NULL,
-  Description VARCHAR(255)
+CREATE TABLE IF NOT EXISTS combo (
+  combo_id         SERIAL PRIMARY KEY,
+  combo_name       VARCHAR(100) NOT NULL,
+  discount_percent NUMERIC(5,2) NOT NULL CHECK (discount_percent >= 0 AND discount_percent <= 100),
+  description      VARCHAR(255)
 );
 
-CREATE TABLE Combo_Items (
-  Combo_ID INT,
-  Item_ID INT,
-  PRIMARY KEY (Combo_ID, Item_ID),
-  FOREIGN KEY (Combo_ID) REFERENCES Combo(Combo_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Item_ID) REFERENCES Menu_Item(Item_ID)
+-- Bridge table for the many-to-many between Combo and Menu_Item
+CREATE TABLE IF NOT EXISTS combo_items (
+  combo_id INT REFERENCES combo(combo_id) ON DELETE CASCADE,
+  item_id  INT REFERENCES menu_item(item_id),
+  PRIMARY KEY (combo_id, item_id)
 );
 
-CREATE TABLE `Order` (
-  Order_ID INT AUTO_INCREMENT PRIMARY KEY,
-  Order_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
-  Customer_ID INT,
-  Employee_ID INT,
-  Total_Amount DECIMAL(8,2),
-  FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID),
-  FOREIGN KEY (Employee_ID) REFERENCES Employee(Employee_ID)
+CREATE TABLE IF NOT EXISTS orders (
+  order_id     SERIAL PRIMARY KEY,
+  order_date   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  customer_id  INT REFERENCES customer(customer_id),
+  employee_id  INT REFERENCES employee(employee_id),
+  total_amount NUMERIC(8,2)
 );
 
--- Weak entity: identified by Order_ID + Order_Detail_ID
-CREATE TABLE Order_Details (
-  Order_Detail_ID INT,
-  Order_ID INT NOT NULL,
-  Item_ID INT NOT NULL,
-  Quantity INT NOT NULL,
-  Subtotal DECIMAL(8,2),
-  PRIMARY KEY (Order_ID, Order_Detail_ID),
-  FOREIGN KEY (Order_ID) REFERENCES `Order`(Order_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Item_ID) REFERENCES Menu_Item(Item_ID)
+-- Weak entity of orders: identified by (order_id, order_detail_id)
+CREATE TABLE IF NOT EXISTS order_details (
+  order_detail_id INT,
+  order_id        INT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
+  item_id         INT NOT NULL REFERENCES menu_item(item_id),
+  quantity        INT NOT NULL CHECK (quantity > 0),
+  subtotal        NUMERIC(8,2),
+  PRIMARY KEY (order_id, order_detail_id)
 );
 
-CREATE TABLE Payment (
-  Payment_ID INT AUTO_INCREMENT PRIMARY KEY,
-  Order_ID INT NOT NULL,
-  Payment_Mode VARCHAR(20),
-  Payment_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
-  Amount DECIMAL(8,2),
-  GST DECIMAL(8,2),
-  FOREIGN KEY (Order_ID) REFERENCES `Order`(Order_ID)
+CREATE TABLE IF NOT EXISTS payment (
+  payment_id   SERIAL PRIMARY KEY,
+  order_id     INT NOT NULL REFERENCES orders(order_id),
+  payment_mode VARCHAR(20),
+  payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  amount       NUMERIC(8,2),
+  gst          NUMERIC(8,2)
+);
+
+-- Filled automatically by the payment trigger (see triggers.sql)
+CREATE TABLE IF NOT EXISTS order_log (
+  log_id      SERIAL PRIMARY KEY,
+  order_id    INT NOT NULL REFERENCES orders(order_id),
+  action      VARCHAR(255),
+  action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

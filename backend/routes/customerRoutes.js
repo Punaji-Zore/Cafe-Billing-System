@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/customerController');
 
-// TODO: replace with real routes per API contract (Section 3 of project plan doc)
-router.all('*', controller.placeholder);
+router.get('/', controller.getAllCustomers);
+router.get('/:id', controller.getCustomerById);
+router.post('/', controller.createCustomer);
+router.put('/:id', controller.updateCustomer);
+router.delete('/:id', controller.deleteCustomer);
 
 module.exports = router;

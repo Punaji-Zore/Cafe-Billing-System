@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/employeeController');
 
-// TODO: replace with real routes per API contract (Section 3 of project plan doc)
-router.all('*', controller.placeholder);
+router.get('/', controller.getAllEmployees);
+router.get('/:id', controller.getEmployeeById);
+router.post('/', controller.createEmployee);
+router.put('/:id', controller.updateEmployee);
+router.delete('/:id', controller.deleteEmployee);
 
 module.exports = router;
