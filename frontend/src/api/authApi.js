@@ -1,4 +1,8 @@
-import axios from 'axios'; // plain axios on purpose: a wrong password must not trigger the auto-logout redirect
+import axios from 'axios';
+
+const API_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const login = (Username, Password) =>
-  axios.post('/api/auth/login', { Username, Password }).then((res) => res.data);
+  axios.post(`${API_URL}/api/auth/login`, { Username, Password })
+    .then((res) => res.data);
