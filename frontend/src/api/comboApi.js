@@ -1,9 +1,8 @@
-import axios from 'axios';
+import client from './client';
 
 const BASE = '/api/combos';
 
-export const getCombos = () => axios.get(BASE).then((res) => res.data);
-export const getCombo = (id) => axios.get(`${BASE}/${id}`).then((res) => res.data);
-export const createCombo = (combo) => axios.post(BASE, combo).then((res) => res.data);
-export const updateCombo = (id, combo) => axios.put(`${BASE}/${id}`, combo).then((res) => res.data);
-export const deleteCombo = (id) => axios.delete(`${BASE}/${id}`).then((res) => res.data);
+export const getCombos = () => client.get(BASE).then((r) => r.data);
+export const createCombo = (combo) => client.post(BASE, combo).then((r) => r.data);
+export const updateCombo = (id, combo) => client.put(`${BASE}/${id}`, combo).then((r) => r.data);
+export const deleteCombo = (id) => client.delete(`${BASE}/${id}`).then((r) => r.data);
