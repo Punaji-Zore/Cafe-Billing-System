@@ -1,4 +1,4 @@
-javascript
+
 import axios from 'axios';
 
 // Send all API requests to the deployed Render backend.
