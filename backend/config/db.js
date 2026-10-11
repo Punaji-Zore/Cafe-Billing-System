@@ -6,13 +6,22 @@ require('dotenv').config();
 types.setTypeParser(1700, (v) => parseFloat(v)); // NUMERIC
 types.setTypeParser(20, (v) => parseInt(v, 10)); // BIGINT (COUNT)
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      }
+    : {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 5432,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+      }
+);
+
 
 // Postgres folds unquoted column names to lowercase (item_id). Our API
 // contract uses Item_ID, Item_Name, ... so map every column back to it.
